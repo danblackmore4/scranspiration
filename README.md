@@ -37,13 +37,38 @@ What works right now:
 -   Public homepage showing a grid of recipes
 -   Authenticated users can visit `/recipes/create` and submit new recipes
 -   Recipes are stored with relationships to **users**, **categories**, and **ingredients**
+-   API (OpenFoodFacts) for food search and Macros
+
+## Food Search & Macros API Integration (OpenFoodFacts)
+
+This project now includes automatic ingredient lookup and macro calculation using the OpenFoodFacts API - a completely free, community-driven API.
+
+**How It Works**
+When creating a recipe:
+
+-   Users can search for real supermarket products (e.g. Tesco Reduced Fat Cheese)
+-   The app calls a custom backend route (GET /api/foods/search?q=<query>)
+-   Laravel uses a dedicated service, OpenFoodFactsService, which queries the OpenFoodFacts API.
+-   For each food item, the service extracts:
+    -   Name
+    -   Brand
+    -   Barcode
+    -   Calories per 100g
+    -   Protein per 100g
+    -   Carbs per 100g
+    -   Fat per 100g
+-   The Livewire/Volt component then:
+    -   Lets the user add ingredients
+    -   Allows editing the grams of each ingredient
+    -   Automatically calculates recipe totals
+    -   Stores all macros in the pivot table per ingredient
 
 Planned improvements:
 
 -   Image uploads for recipes
 -   Better filtering and search on the homepage
--   Full macro breakdown per recipe using an external nutrition API
 -   Polished responsive design and accessibility tweaks
+-   (if time allows) a calender which can hold a users planned meals for the week
 
 ---
 
