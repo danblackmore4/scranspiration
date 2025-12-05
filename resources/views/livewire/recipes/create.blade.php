@@ -1,157 +1,3 @@
-<?php
-
-use Livewire\Volt\Component;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Recipe;
-use App\Models\Ingredient;
-use App\Services\OpenFoodFactsService;
-
-
-new class extends Component {
-
-    public string $title = '';
-    public string $description = '';
-    public int $servings = 1;
-    public string $instructions = '';
-    public int $category_id = 1;
-
-    public string $search = '';
-    public array $searchResults = [];
-
-    /**
-     * ingredients[] structure:
-     * [
-     *   'name' => string,
-     *   'brand' => string|null,
-     *   'barcode' => string|null,
-     *   'calories_100g' => float,
-     *   'protein_100g' => float,
-     *   'carbs_100g' => float,
-     *   'fats_100g' => float,
-     *   'grams' => number,
-     * ]
-     */
-    public array $ingredients = [];
-
-    // Search OpenFoodFacts API via own backend route
-    public function updatedSearch()
-{
-    if (strlen($this->search) < 2) {
-        $this->searchResults = [];
-        return;
-    }
-
-    info('Search triggered: ' . $this->search);
-
-    /** @var OpenFoodFactsService $service */
-    $service = app(OpenFoodFactsService::class);
-
-    $this->searchResults = $service->search($this->search);
-
-    info('Results count: ' . count($this->searchResults));
-}
-
-
-    // Add ingredient from the search results
-    public function addIngredient($index)
-    {
-        $item = $this->searchResults[$index] ?? null;
-        if (!$item) return;
-
-        $this->ingredients[] = [
-            'name' => $item['name'],
-            'brand' => $item['brand'] ?? null,
-            'barcode' => $item['id'],
-
-            'calories_100g' => $item['nutrients']['calories_100g'],
-            'protein_100g'  => $item['nutrients']['protein_100g'],
-            'carbs_100g'    => $item['nutrients']['carbs_100g'],
-            'fats_100g'     => $item['nutrients']['fats_100g'],
-
-            'grams' => 100, // default editable amount
-        ];
-
-        $this->search = '';
-        $this->searchResults = [];
-    }
-
-    // Remove ingredient
-    public function removeIngredient($index)
-    {
-        unset($this->ingredients[$index]);
-        $this->ingredients = array_values($this->ingredients);
-    }
-
-    // Save recipe, ingredients, and pivot macro data
-    public function save()
-    {
-        $recipe = Recipe::create([
-            'user_id' => Auth::id(),
-            'title' => $this->title,
-            'description' => $this->description,
-            'servings' => $this->servings,
-            'instructions' => $this->instructions,
-            'category_id' => $this->category_id,
-        ]);
-
-        $totalCalories = 0;
-        $totalProtein = 0;
-        $totalCarbs = 0;
-        $totalFats = 0;
-
-        foreach ($this->ingredients as $item) {
-
-            // Create / Find the ingredient in the DB
-            $ingredient = Ingredient::firstOrCreate(
-                ['name' => $item['name']],
-                [
-                    'brand' => $item['brand'],
-                    'barcode' => $item['barcode'],
-                    'calories_per_100g' => $item['calories_100g'],
-                    'protein_per_100g'  => $item['protein_100g'],
-                    'carbs_per_100g'    => $item['carbs_100g'],
-                    'fats_per_100g'     => $item['fats_100g'],
-                ]
-            );
-
-            // Calculate macros for the chosen amount
-            $factor = $item['grams'] / 100;
-
-            $cal = $item['calories_100g'] * $factor;
-            $pro = $item['protein_100g']  * $factor;
-            $car = $item['carbs_100g']    * $factor;
-            $fat = $item['fats_100g']     * $factor;
-
-            $totalCalories += $cal;
-            $totalProtein  += $pro;
-            $totalCarbs    += $car;
-            $totalFats     += $fat;
-
-            // Attach pivot row
-            $recipe->ingredients()->attach($ingredient->id, [
-                'amount' => $item['grams'],
-                'calories' => $cal,
-                'protein' => $pro,
-                'carbs' => $car,
-                'fats' => $fat,
-            ]);
-        }
-
-        // Update recipe totals
-        $recipe->update([
-            'calories' => round($totalCalories),
-            'protein'  => round($totalProtein),
-            'carbs'    => round($totalCarbs),
-            'fats'     => round($totalFats),
-        ]);
-
-        return redirect('/')->with('success', 'Recipe created!');
-    }
-};
-
-?>
-
 <div class="max-w-2xl mx-auto py-10">
 
     <h1 class="text-3xl font-bold mb-6">Add a New Recipe</h1>
@@ -207,6 +53,24 @@ new class extends Component {
                 @endforeach
             </div>
         @endif
+
+        <!-- Image File Input -->
+        <div class="mb-4">
+            <label class="block font-semibold">Recipe Image</label>
+            <input type="file" wire:model="image" class="w-full border rounded p-2">
+        </div>
+
+        @error('image')
+            <div class="text-red-600 text-sm">{{ $message }}</div>
+        @enderror
+
+        @if ($image)
+            <div class="mt-2">
+                <img src="{{ $image->temporaryUrl() }}" class="w-48 rounded shadow">
+            </div>
+        @endif
+
+
 
 
         <!-- Selected Ingredients -->

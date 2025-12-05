@@ -9,6 +9,15 @@ export default {
         './resources/views/**/*.blade.php',
     ],
 
+    safelist: [
+        "bg-gradient-to-b",
+        "from-green-900",
+        "to-green-500",
+        // Add any variations you want:
+        "from-green-800",
+        "to-green-300",
+    ],
+
     theme: {
         extend: {
             fontFamily: {

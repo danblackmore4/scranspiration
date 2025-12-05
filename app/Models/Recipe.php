@@ -27,6 +27,7 @@ class Recipe extends Model
         'fats',
         'servings',
         'instructions',
+        'image',
     ];
 
     public function totalCalories()
@@ -78,6 +79,7 @@ class Recipe extends Model
      */
     public function ingredients()
     {
-        return $this->belongsToMany(Ingredient::class);
+        return $this->belongsToMany(Ingredient::class)
+                    ->withPivot(['amount','calories','protein','carbs','fats']);
     }
 }
