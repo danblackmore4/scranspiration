@@ -19,6 +19,7 @@ class Comment extends Model
         'body',
         'user_id',
         'recipe_id',
+        'content',
     ];
 
     /**

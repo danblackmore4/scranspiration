@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Models\User;
 
 class ProfileController extends Controller
 {
@@ -20,6 +21,21 @@ class ProfileController extends Controller
             'user' => $request->user(),
         ]);
     }
+
+    public function show(User $user)
+    {
+        // Load user + their recipes + comments
+        $user->load([
+            'recipes',
+            'comments.recipe'
+        ]);
+
+        $recipes = $user->recipes;
+        $comments = $user->comments;
+
+        return view('users.profile', compact('user', 'recipes', 'comments'));
+    }
+
 
     /**
      * Update the user's profile information.

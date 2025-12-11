@@ -13,7 +13,7 @@ This project was created as part of my **CS348 – Web Application Development**
 -   **View key details** for each recipe: title, category, description, and author
 -   **Authenticated recipe creation** via a Volt-powered “Add Recipe” page
 -   **Ingredient management** – add/remove ingredients dynamically on the form
--   (Planned) **Macro & calorie calculation** using the OpenFoodFacts API
+-   **Macro & calorie calculation** using the OpenFoodFacts API
 -   **Auth scaffolding** with Laravel Breeze (login, register, password reset)
 
 ---

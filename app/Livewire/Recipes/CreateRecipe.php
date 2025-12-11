@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Recipe;
 use App\Models\Ingredient;
+use App\Models\Category;
 use App\Services\OpenFoodFactsService;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,12 +18,22 @@ class CreateRecipe extends Component
     public string $description = '';
     public int $servings = 1;
     public string $instructions = '';
-    public int $category_id = 1;
+    public $category_id = null;
 
     public string $search = '';
     public array $searchResults = [];
     public array $ingredients = [];
     public $image;
+
+    public $categories = [];
+
+    /**
+     * Load categories when component mounts.
+     */
+    public function mount()
+    {
+        $this->categories = Category::all();
+    }
 
     /**
      * Search OpenFoodFacts via your service.
@@ -72,15 +83,20 @@ class CreateRecipe extends Component
 
     public function save()
     {
-        // (optional) validation – you can add back your rules here if you like
-        // $this->validate([...]);
+        // Basic validation
+        $this->validate([
+            'title'        => 'required|min:3',
+            'description'  => 'required|min:5',
+            'category_id'  => 'required|exists:categories,id',
+            'servings'     => 'required|integer|min:1',
+            'instructions' => 'required|min:5',
+        ]);
 
         $imagePath = null;
 
         if ($this->image) {
             $imagePath = $this->image->store('recipe_images', 'public');
         }
-
 
         $recipe = Recipe::create([
             'user_id'      => Auth::id(),
@@ -143,6 +159,8 @@ class CreateRecipe extends Component
 
     public function render()
     {
-        return view('livewire.recipes.create');
+        return view('livewire.recipes.create', [
+            'categories' => $this->categories
+        ]);
     }
 }

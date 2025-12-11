@@ -16,6 +16,24 @@
             <textarea wire:model="description" class="w-full border rounded p-2"></textarea>
         </div>
 
+        <!-- Category -->
+        <div class="mb-4">
+            <label class="block font-semibold">Category</label>
+            <select wire:model="category_id" class="w-full border rounded p-2">
+                <option value="">-- Select Category --</option>
+
+                @foreach ($categories as $category)
+                    <option value="{{ $category->id }}">
+                        {{ $category->name }}
+                    </option>
+                @endforeach
+            </select>
+
+            @error('category_id')
+                <div class="text-red-600 text-sm">{{ $message }}</div>
+            @enderror
+        </div>
+
         <!-- Servings -->
         <div class="mb-4">
             <label class="block font-semibold">Servings</label>
@@ -37,18 +55,19 @@
         </div>
 
         <!-- Search Results -->
-        @if(!empty($searchResults))
+        @if (!empty($searchResults))
             <div class="border rounded bg-white shadow mb-4 max-h-60 overflow-y-auto">
                 @foreach ($searchResults as $index => $result)
                     <button 
                         type="button"
                         wire:click="addIngredient({{ $index }})"
                         class="block w-full text-left p-2 border-b hover:bg-gray-100">
-                        
+
                         <div class="font-semibold">{{ $result['name'] }}</div>
                         <div class="text-sm text-gray-500">
                             {{ $result['brand'] ?? 'Unknown brand' }}
                         </div>
+
                     </button>
                 @endforeach
             </div>
@@ -70,9 +89,6 @@
             </div>
         @endif
 
-
-
-
         <!-- Selected Ingredients -->
         <div class="mt-4">
             <h3 class="font-semibold">Selected Ingredients:</h3>
@@ -85,13 +101,17 @@
                         <div class="text-sm text-gray-500">{{ $ingredient['brand'] }}</div>
                     </div>
 
-                    <input type="number"
-                           wire:model="ingredients.{{ $index }}.grams"
-                           class="w-20 border rounded p-1">
+                    <input
+                        type="number"
+                        wire:model="ingredients.{{ $index }}.grams"
+                        class="w-20 border rounded p-1"
+                    >
 
-                    <button type="button"
-                            wire:click="removeIngredient({{ $index }})"
-                            class="text-red-600 font-semibold">
+                    <button
+                        type="button"
+                        wire:click="removeIngredient({{ $index }})"
+                        class="text-red-600 font-semibold"
+                    >
                         Remove
                     </button>
                 </div>

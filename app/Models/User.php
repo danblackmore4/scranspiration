@@ -70,4 +70,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function isCreator(): bool
+    {
+        return $this->role && $this->role->name === 'creator';
+    }
+
+    public function isUser(): bool
+    {
+        return $this->role && $this->role->name === 'user';
+    }
+
 }
